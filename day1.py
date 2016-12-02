@@ -8,31 +8,31 @@ Move = namedtuple('Move', ['direction', 'blocks'])
 def is_right(direction):
     return direction == 'R'
 
-def traverse_diff(facing, direction):
-    if facing == 'N':
-        return (1,0,'E') if is_right(direction) else (-1,0,'W')
-    elif facing == 'S':
-        return (-1,0,'W') if is_right(direction) else (1,0,'E')
-    elif facing == 'E':
-        return (0,-1,'S') if is_right(direction) else (0,1,'N')
-    elif facing == 'W':
-        return (0,1,'N') if is_right(direction) else (0,-1,'S')
-
 def parse_move(movement_str):
     return Move(direction=movement_str[0], blocks=int(movement_str[1:]))
 
-def traverse_coords(state, movement_str):
-    move = parse_move(movement_str)
-    x, y, new_facing = traverse_diff(state.facing, move.direction)
-    x_delta, y_delta = x*move.blocks, y*move.blocks
-    return State(facing=new_facing, x=state.x + x_delta, y=state.y + y_delta)
+def update_state(state, move):
+    if facing == 'N':
+        state = State('E',1,0) if is_right(move.direction) else State('W',-1,0)
+    elif facing == 'S':
+        state = State('W',-1,0) if is_right(move.direction) else State('E',1,0)
+    elif facing == 'E':
+        state = State('S',0,-1) if is_right(move.direction) else State('N',0,1)
+    elif facing == 'W':
+        state = State('N',0,1) if is_right(move.direction) else State('S',0,-1)
+
+    return state._replace(x=state.x * move.blocks, y=state.y * move.blocks)
 
 def taxicab_geometry(start, end):
     return abs(start.y - end.y) + abs(start.x - end.x)
 
+def traverse(state, movement_str):
+    move = parse_move(movement_str)
+    return update_state(state.facing, move.direction)
+
 def main(movements):
     start = State(facing='N', x=0, y=0)
-    end = reduce(traverse_coords, movements, start)
+    end = reduce(traverse, movements, start)
     return taxicab_geometry(start, end)
 
 if __name__ == '__main__':
